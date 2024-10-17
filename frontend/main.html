@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<h2>书城</h2>
+		<meta charset="utf-8">
+		<title>在线书店</title>
+		<style>
+			.user-btn {
+				position: absolute;
+				top: 5px;
+				right: 10px;
+			}
+			.bu {
+				position: absolute;
+				top: 5px;
+				right: 200px;
+			}
+
+			.container {
+				display: flex;
+				justify-content: space-between;
+			}
+
+			.book-table-container {
+				flex: 1;
+				margin-right: 20px;
+				/* 根据需要调整 */
+			}
+
+			.category-table-container {
+				flex: 1;
+			}
+		</style>
+		<!-- ... 其他样式和链接 ... -->
+
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	</head>
+	<body>
+		<div id="app">
+			<el-dialog
+				            title="购买信息"
+				            :visible.sync="editDialogVisible"
+				            width="30%">
+				        
+				        <el-form ref="form" :model="editForm" label-width="80px">
+				 
+				           
+				            <el-form-item label="书名">
+				                <el-input v-model="editForm.name"></el-input>
+				            </el-form-item>
+				            <el-form-item label="数量">
+				                <el-input v-model="editForm.count"></el-input>
+				            </el-form-item>
+				        </el-form>
+				        <span slot="footer" class="dialog-footer">
+				    <el-button @click="editDialogVisible = false">取 消</el-button>
+				    <el-button type="primary" @click="save()">确 定</el-button>
+				  </span>
+				    </el-dialog>
+	
+					<el-table ref="singleTable" :data="books" highlight-current-row
+						@current-change="handleCurrentChange" style="width: 100%; margin-left: 225px;">
+						<el-table-column fixed property="id" label="id" width="70">
+						</el-table-column>
+						<el-table-column property="title" label="书名" width="120">
+						</el-table-column>
+						<el-table-column property="author" label="作者" width="120">
+						</el-table-column>
+						<el-table-column property="isbn" label="isbn" width="100">
+						</el-table-column>
+						<el-table-column property="price" label="单价" width="70">
+						</el-table-column>
+						<el-table-column property="stock" label="库存" width="70">
+						</el-table-column>
+						<el-table-column property="description" label="描述" width="200">
+						</el-table-column>
+						<el-table-column property="categoryId" label="类别号" width="70">
+						</el-table-column>
+						<el-table-column label="操作" width="100">
+							<template slot-scope="scope">
+								<el-popconfirm :title="`确定购买'${scope.row.id}'？`" @confirm="updateShow(scope.row)">
+									<el-button circle icon="el-icon-shopping-cart-full" slot="reference"></el-button>
+								</el-popconfirm>
+
+							</template>
+						</el-table-column>
+					</el-table>
+					<div class="bu">
+						<el-popover
+						  placement="right"
+						  width="400"
+						  trigger="click"
+						  >
+						  <el-table :data="order">
+						    <el-table-column width="150" property="id" label="订单号"></el-table-column>
+							<el-table-column width="150" property="name" label="书名"></el-table-column>
+							<el-table-column width="150" property="count" label="购买数量"></el-table-column>
+						    <el-table-column width="100" property="orderDate" label="购买时间" ></el-table-column>
+						    <el-table-column width="300" property="totalPrice" label="总金额"></el-table-column>
+						  </el-table>
+						  <el-button slot="reference">订单</el-button>
+						</el-popover>
+						
+					</div>
+			
+			<div class="user-btn">
+				<el-button @click="logout()">安全退出</el-button>
+			</div>
+
+			<!-- 添加书籍类别表格的容器 -->
+			<div class="category-table-container">
+				<el-table :data="bookCategories" style="width: 100%; margin-left: 600px;">
+					<!-- 添加书籍类别的列定义，类似于书籍表格 -->
+					<el-table-column property="id" label="类别号" width="70"></el-table-column>
+					<el-table-column property="name" label="类别名称" width="150"></el-table-column>
+					<!-- ... 其他可能需要的列 ... -->
+				</el-table>
+			</div>
+
+		</div>
+
+		<script src="js/axios.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script>
+			axios.defaults.withCredentials = true;
+			new Vue({
+				el: '#app',
+				data: {
+					books: [],
+					bookCategories:[],
+					price:null,
+					stock:null,
+					//控制编辑对话框的显示和隐藏
+					editDialogVisible: false,
+						    //修改学生的表单对象
+						    
+							editForm: {
+								name:'',
+								totalPrice:null,
+								orderDate:'',
+								count:null
+							},
+					order:[],
+				},
+				methods: {
+					
+					handleCurrentChange(val) {
+						this.currentRow = val;
+					},
+					logout(){
+						axios.post('http://localhost:9000/users/logout').then(res=>{
+							if(res.data.isOk){
+								alert(res.data.msg);
+								localStorage.clear();
+								location.href='login.html';
+							}else{
+								alert(res.data.msg);
+							}
+						})
+					},
+					//编辑确认按钮点击事件
+					           save () {
+								   this.editForm.totalPrice=(this.price)*(this.editForm.count);
+								   let fd = new FormData();
+								   fd.append('name', this.editForm.name);
+								   fd.append('count', this.editForm.count);
+								   fd.append('totalPrice', this.editForm.totalPrice);
+								   
+								   if(this.editForm.count>this.stock){
+									   alert("库存不够，无法购买");
+								   }else{axios.post('http://localhost:9000/orders/add', fd).then(res => {
+					                  this.$message.success("保存成功")
+					                    this.editDialogVisible = false
+					                    this.loadOrder();
+					                 
+					                })}
+								
+								   
+								   
+					                
+					          
+					              },
+								  //编辑按钮事件
+								  updateShow(row) {
+								      this.editDialogVisible = true;
+								      //回显 当前行赋值给修改学生的表单对象
+									  this.editForm.name=row.title;
+									  this.price=row.price;
+									  this.stock=row.stock;
+								      
+								  },
+					loadOrder(){
+						axios.get('http://localhost:9000/orders/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+								
+								this.order = res.data.orders;
+							}
+						})
+						
+					},
+					
+					
+					loadBooks() {
+						axios.get('http://localhost:9000/books/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+								
+								this.books = res.data.books;
+							}
+						})
+					},
+					loadBookCatogories() {
+						axios.get('http://localhost:9000/categories/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+				
+								this.bookCategories = res.data.bookCategories;
+							}
+						})
+					},
+				},
+				created() {
+					//Vue对象创建完成时，执行的钩子函数
+					this.loadBooks()
+					this.loadBookCatogories()
+					this.loadOrder()
+				}
+
+			})
+		</script>
+	</body>
+</html>

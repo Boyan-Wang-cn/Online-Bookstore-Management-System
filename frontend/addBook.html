@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>用户注册</title>
+		<link rel="stylesheet" <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	</head>
+	<body>
+		<div id="app">
+			<el-row>
+				<el-col :offset="6" :span="12">
+					<el-form :model="registerForm" :rules="rules" ref="registerForm" label-width="100px"
+						class="demo-ruleForm">
+						<el-form-item label="书名" prop="title">
+							<el-input v-model="registerForm.title"></el-input>
+						</el-form-item>
+						
+						<el-form-item label="作者" prop="author">
+							<el-input v-model="registerForm.author"></el-input>
+						</el-form-item>
+						
+						<el-form-item label="isbn号" prop="isbn">
+							<el-input v-model="registerForm.isbn"></el-input>
+						</el-form-item>
+						
+						<el-form-item label="价格" prop="price">
+							<el-input v-model="registerForm.price"></el-input>
+						</el-form-item>
+						
+						<el-form-item label="库存" prop="stock">
+							<el-input v-model="registerForm.stock"></el-input>
+						</el-form-item>
+						
+						<el-form-item label="描述" prop="description">
+							<el-input v-model="registerForm.description"></el-input>
+						</el-form-item>
+						
+						
+						<el-form-item label="类别号" prop="categoryId">
+							<el-input v-model="registerForm.categoryId"></el-input>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" @click.prevent="register()">添加</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+			
+			<el-table :data="bookCategories" style="width: 100%">
+				<!-- 添加书籍类别的列定义，类似于书籍表格 -->
+				<el-table-column property="id" label="类别号" width="200"></el-table-column>
+				<el-table-column property="name" label="类别名称" width="200"></el-table-column>
+				<!-- ... 其他可能需要的列 ... -->
+			</el-table>
+		</div>
+		<script src="js/axios.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script>
+			axios.defaults.withCredentials = true;
+			 
+			new Vue({
+						el: '#app',
+						data: {
+							bookCategories: [],
+							
+							registerForm: {
+								categoryId:null,
+								id: null,
+								title: '',
+								author: '',
+								isbn: '',
+								price:'',
+								stock: '',
+								description: ''
+							},
+							
+							rules: {
+								
+								categoryId: [{
+										required: true,
+										message: '类别号不能为空',
+										trigger: 'blur'
+									},
+								],
+		
+								title: [{
+										required: true,
+										message: '书名不能为空',
+										trigger: 'blur'
+									},
+									// 可以添加邮箱格式验证规则  
+								],
+								author: [{
+										required: true,
+										message: '作者不能为空',
+										trigger: 'blur'
+									},
+									
+								],
+								isbn: [{
+										required: true,
+										message: 'isbn不能为空',
+										trigger: 'blur'
+									},
+									
+								],
+								price: [{
+										required: true,
+										message: 'price作者不能为空',
+										trigger: 'blur'
+									},
+									
+								],
+								stock: [{
+										required: true,
+										message: 'stock作者不能为空',
+										trigger: 'blur'
+									},
+									
+								],
+								description: [{
+										required: true,
+										message: '描述不能为空',
+										trigger: 'blur'
+									},
+									
+								],
+								
+							},
+						},
+						methods: {
+							loadBookCatogories() {
+								axios.get('http://localhost:9000/categories/list').then(res => {
+									this.$message(res.data.msg);
+									if (res.data.isOk) {
+										// alert(res.data.msg);
+							
+										this.bookCategories = res.data.bookCategories;
+									}
+								})
+							},
+							
+							register() {
+								this.$refs.registerForm.validate(async (valid) => {
+									if (valid) {
+										let fd = new FormData();
+										fd.append('title', this.registerForm.title);
+										fd.append('author', this.registerForm.author);
+										fd.append('isbn', this.registerForm.isbn);
+										fd.append('price', this.registerForm.price);
+										fd.append('stock', this.registerForm.stock);
+										fd.append('description', this.registerForm.description);
+										fd.append('categoryId', this.registerForm.categoryId);
+										axios.post('http://localhost:9000/books/add', fd).then(res => {
+											if(res.data.isOk){
+												location.href='listBook.html';
+											}else{this.$message("isbn号已存在或者类别号不存在")}
+											
+												
+												
+											
+										})
+											
+
+										
+									}
+								});
+							}
+						},
+						created() {
+							//Vue对象创建完成时，执行的钩子函数
+							this.loadBookCatogories()
+						}
+						    
+					});
+		</script>
+	</body>
+</html>

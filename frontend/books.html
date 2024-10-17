@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<h2>书城</h2>
+		<meta charset="utf-8">
+		<title>在线书店</title>
+		<style>
+			body{
+					 margin:0;
+					 padding:0;
+			}
+			.navbar{
+					 background-color: #e19999;
+					 text-align:center;
+			}
+			.navbar a{
+					 color:white;
+					 padding: 14px 50px;
+					 text-decoration: none;
+					 display: inline-block;
+			}
+			   .center {  
+			       text-align: center;  
+			   } 
+					 .navbar a:hover{
+						 background-color:#a16c6c ;
+					 }
+			.user-btn {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+			}
+
+			.container {
+				display: flex;
+				justify-content: space-between;
+			}
+
+			.book-table-container {
+				flex: 1;
+				margin-right: 20px;
+				/* 根据需要调整 */
+			}
+
+			.category-table-container {
+				flex: 1;
+			}
+		</style>
+		<!-- ... 其他样式和链接 ... -->
+
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	</head>
+	<body>
+		<div class="navbar">
+			<a href="listUser.html">用户管理</a>
+			<a href="books.html">图书管理</a>
+			<a href="">图书类别管理</a>
+			
+		</div>
+		<div id="app" class="container">
+			<div class="book-table-container">
+				<template>
+					<el-table ref="singleTable" :data="books" highlight-current-row
+						@current-change="handleCurrentChange" style="width: 100%">
+						<el-table-column fixed property="id" label="id" width="70">
+						</el-table-column>
+						<el-table-column property="title" label="书名" width="120">
+						</el-table-column>
+						<el-table-column property="author" label="作者" width="120">
+						</el-table-column>
+						<el-table-column property="isbn" label="isbn" width="100">
+						</el-table-column>
+						<el-table-column property="price" label="单价" width="70">
+						</el-table-column>
+						<el-table-column property="stock" label="库存" width="70">
+						</el-table-column>
+						<el-table-column property="description" label="描述" width="200">
+						</el-table-column>
+						<el-table-column property="categoryId" label="类别号" width="70">
+						</el-table-column>
+						<el-table-column label="操作" width="100">
+							<template slot-scope="scope">
+								<el-popconfirm :title="`确定删除'${scope.row.id}'？`" @confirm="delStudent(scope.row.id)">
+									<el-button circle icon="el-icon-delete" slot="reference"></el-button>
+								</el-popconfirm>
+
+							</template>
+						</el-table-column>
+					</el-table>
+
+				</template>
+			</div>
+			<div class="user-btn">
+				<el-button @click="handleUserClick">用户</el-button>
+			</div>
+
+			<!-- 添加书籍类别表格的容器 -->
+			<div class="category-table-container">
+				<el-table :data="bookCategories" style="width: 100%">
+					<!-- 添加书籍类别的列定义，类似于书籍表格 -->
+					<el-table-column property="id" label="类别号" width="70"></el-table-column>
+					<el-table-column property="name" label="类别名称" width="150"></el-table-column>
+					<!-- ... 其他可能需要的列 ... -->
+				</el-table>
+			</div>
+
+		</div>
+
+		<script src="js/axios.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script>
+			axios.defaults.withCredentials = true;
+			new Vue({
+				el: '#app',
+				data: {
+					books: [],
+					bookCategories:[]
+				},
+				methods: {
+					handleCurrentChange(val) {
+						this.currentRow = val;
+					},
+					handleUserClick() { // 处理用户点击事件，例如弹出一个警告或导航到设置页面  
+						alert('点击了用户按钮，将跳转到设置页面...');
+					},
+					loadBooks() {
+						axios.get('http://localhost:9000/books/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+								
+								this.books = res.data.books;
+							}
+						})
+					},
+					loadBookCatogories() {
+						axios.get('http://localhost:9000/book-categories/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+				
+								this.bookCategories = res.data.bookCategories;
+							}
+						})
+					},
+				},
+				created() {
+					//Vue对象创建完成时，执行的钩子函数
+					this.loadBooks()
+					this.loadBookCatogories()
+				}
+
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>在线书店</title>
+		<style>
+			.content{
+				padding:30px;
+				justify-content: center;
+			
+			}
+			body {
+				margin: 0;
+				padding: 0;
+			}
+
+			.navbar {
+				background-color: #B0E0E6;
+				text-align: center;
+			}
+
+			.navbar a {
+				color: white;
+				padding: 14px 50px;
+				text-decoration: none;
+				display: inline-block;
+			}
+
+			.center {
+				text-align: center;
+			}
+
+			.navbar a:hover {
+				background-color: #a16c6c;
+			}
+
+			.navbar a.active {
+				background-color: #2F4F4F;/ color: yellow;
+			}
+
+			.container {
+				display: flex;
+				justify-content: space-between;
+			}
+
+			.book-table-container {
+				flex: 1;
+				margin-right: 20px;
+				/* 根据需要调整 */
+			}
+			.user-btn {
+				background-color: #a16c6c;
+				position: absolute;
+				top: 5px;
+				right: 10px;
+			}
+
+			.category-table-container {
+				flex: 1;
+			}
+		</style>
+		<!-- ... 其他样式和链接 ... -->
+
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	</head>
+	<body>
+		<div class="navbar">
+			<a href="listUser.html">用户管理</a>
+			<a href="listBook.html" >图书管理</a>
+			<a href="listCategory.html"class="active">图书类别管理</a>
+
+		</div>
+		<div id="app" class="content">
+		<div class="user-btn">
+			<el-button @click="logout()">安全退出</el-button>
+		</div>
+			<div style="margin:10px 5px; ">
+			  <el-input style="width:200px;margin-right: 5px;" suffix-icon="el-icon-search" v-model="id" placeholder="请输入类别号"></el-input>
+			  <el-button type="primary" @click="search(id)">搜索</el-button>
+			  <el-button type="warning" @click="reset()">重置</el-button>
+			</div>
+			
+			<el-dialog
+				            title="编辑图书类别信息"
+				            :visible.sync="editDialogVisible"
+				            width="30%"
+							>
+				        
+				        <el-form ref="form" :model="editForm" label-width="80px">
+				 
+				           
+				            <el-form-item label="类别名">
+				                <el-input v-model="editForm.name"></el-input>
+				            </el-form-item>
+				        </el-form>
+				        <span slot="footer" class="dialog-footer">
+				    <el-button @click="editDialogVisible = false">取 消</el-button>
+				    <el-button type="primary" @click="save()">确 定</el-button>
+				  </span>
+				    </el-dialog>
+			
+			    <el-link icon="el-icon-edit" href="addCategory.html">添加图书类别</el-link>
+				<el-table ref="singleTable" :data="category" highlight-current-row @current-change="handleCurrentChange"
+					style="width: 100%; margin-bottom: 100px; center">
+					<el-table-column fixed property="id" label="id" width="70">
+					</el-table-column>
+					<el-table-column property="name" label="类别" width="120">
+					</el-table-column>
+					
+					<el-table-column label="操作" width="100">
+						<template slot-scope="scope">
+							<el-popconfirm :title="`确定删除'${scope.row.id}'？`" @confirm="delCategory(scope.row.id)">
+								<el-button circle icon="el-icon-delete" slot="reference"></el-button>
+							</el-popconfirm>
+
+						</template>
+					</el-table-column>
+					<el-table-column label="修改" width="100">
+					  <template slot-scope="scope">  
+					    <el-button  
+					                type="primary"  
+					                icon="el-icon-edit"  
+					                circle  
+					                @click="updateShow(scope.row)"  
+					              ></el-button>  
+					  </template>  
+					</el-table-column>
+				</el-table>
+		</div>
+
+		<script src="js/axios.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script> axios.defaults.withCredentials = true;
+			new Vue({
+				el: '#app',
+				data: {
+					category: [],
+					id:'',
+					//控制编辑对话框的显示和隐藏
+					editDialogVisible: false,
+						    //修改学生的表单对象
+						    
+							editForm: {}
+				},
+				methods: {
+					handleCurrentChange(val) {
+						this.currentRow = val;
+					},
+					//编辑确认按钮点击事件
+					           save () {
+					                axios.post('http://localhost:9000/categories/update', this.editForm,{withCredentials: true}).then(res => {
+					                  this.$message.success("保存成功")
+					                    this.editDialogVisible = false
+					                    this.loadCategory();
+					                 
+					                })
+					          
+					              },
+					search(){
+						
+						      // 发起搜索请求  
+						      axios.get('http://localhost:9000/categories/idsearch', {  
+						        params: {id: this.id }  
+						      })  
+						      .then(res => {  
+						        if (res.data.isOk) {
+						            this.category = res.data.bookCategory;  
+						        }  
+						      }) 
+					},
+					reset(){
+						this.id='';
+						this.loadCategory();
+					},
+					delCategory(id){
+							axios.get('http://localhost:9000/categories/del', {
+								params: {id}
+							}).then(res => {
+								
+								this.loadCategory();
+							})
+						},
+					            //编辑按钮事件
+					            updateShow(row) {
+					                this.editDialogVisible = true;
+					                //回显 当前行赋值给修改学生的表单对象
+					                this.editForm = row;
+					            },
+								logout(){
+									axios.post('http://localhost:9000/users/logout').then(res=>{
+										if(res.data.isOk){
+											alert(res.data.msg);
+											localStorage.clear();
+											location.href='login.html';
+										}else{
+											alert(res.data.msg);
+										}
+									})
+								},
+
+					loadCategory() {
+						axios.get('http://localhost:9000/categories/list').then(res => {
+							this.$message(res.data.msg);
+							if (res.data.isOk) {
+								// alert(res.data.msg);
+
+								this.category = res.data.bookCategories;
+							}
+						})
+					},
+					
+				},
+				created() {
+					//Vue对象创建完成时，执行的钩子函数
+					this.loadCategory();
+				}
+
+			})
+		</script>
+	</body>
+</html>

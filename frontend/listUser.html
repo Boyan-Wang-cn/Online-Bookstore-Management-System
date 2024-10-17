@@ -1,0 +1,246 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+    <meta charset="utf-8">  
+    <title></title>  
+    <style> 
+	.content{
+		padding:30px;
+		justify-content: center;
+	
+	}
+	 body{
+		 margin:0;
+		 padding:0;
+	 }
+	 .navbar{
+		 background-color:#B0E0E6;
+		 text-align:center;
+	 }
+	 .navbar a{
+		 color:white;
+		 padding: 14px 50px;
+		 text-decoration: none;
+		 display: inline-block;
+	 }
+        .center {  
+            text-align: center;  
+        } 
+		 .navbar a:hover{
+			 background-color:#a16c6c ;
+		 }
+		 .navbar a.active {  
+		     background-color: #2F4F4F; / 
+		     color: yellow; 
+		 }
+		 .user-btn {
+		 	background-color: #a16c6c;
+		 	position: absolute;
+		 	top: 5px;
+		 	right: 10px;
+		 }
+    </style>  
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">  
+</head>  
+<body>
+	<div class="navbar">
+		<a href="listUser.html" class="active">用户管理</a>
+		<a href="listBook.html">图书管理</a>
+		<a href="listCategory.html">图书类别管理</a>
+		
+	</div>
+    <div id="app" class="content">  
+	<template>
+		
+		 <div>
+			 <div class="user-btn">
+				<el-button @click="logout()">安全退出</el-button>
+			</div>
+		    
+				          <div style="margin:10px 5px; ">
+				            <el-input style="width:200px;margin-right: 5px;" suffix-icon="el-icon-search" v-model="username" placeholder="请输入用户"></el-input>
+				            <el-button type="primary" @click="search(username)">搜索</el-button>
+				            <el-button type="warning" @click="reset()">重置</el-button>
+				          </div>
+						  <el-dialog
+						  	            title="编辑用户信息"
+						  	            :visible.sync="editDialogVisible"
+						  	            width="30%">
+						  	        
+						  	        <el-form ref="form" :model="editForm" label-width="80px">
+						  	 
+						  	           
+						  	            <el-form-item label="用户名">
+						  	                <el-input v-model="editForm.username"></el-input>
+						  	            </el-form-item>
+						  	            <el-form-item label="密码">
+						  	                <el-input v-model="editForm.password"></el-input>
+						  	            </el-form-item>
+						  	 
+						  	            <el-form-item label="邮箱">
+						  	                <el-input v-model="editForm.email"></el-input>
+						  	            </el-form-item>
+						  	        </el-form>
+						  	        <span slot="footer" class="dialog-footer">
+						  	    <el-button @click="editDialogVisible = false">取 消</el-button>
+						  	    <el-button type="primary" @click="save()">确 定</el-button>
+						  	  </span>
+						  	    </el-dialog>
+						  <!-- 添加搜索框 -->  
+						       
+						      <el-link icon="el-icon-edit" href="UserRegister.html">添加用户</el-link>
+						      <el-table  
+						          ref="userTable"  
+						          :data="users"  
+						          highlight-current-row  
+						          style="width: 100%">  
+						          <el-table-column property="id" label="ID" width="100"></el-table-column>  
+						          <el-table-column property="username" label="用户名" width="200"></el-table-column>  
+						          <!-- 注意：出于安全考虑，通常不会在前端展示密码 -->  
+						          <el-table-column property="password" label="密码" width="200" :show-overflow-tooltip="true"></el-table-column>  
+						          <el-table-column property="email" label="邮箱" width="300"></el-table-column>  
+						          <el-table-column property="role" label="角色" width="150"></el-table-column>  
+						          <el-table-column  
+						              property="registered"  
+						              label="注册时间"  
+						              width="200"  
+						              :formatter="formatRegisteredDate">  
+						          </el-table-column>  
+						          <el-table-column label="删除" width="100">
+						          	<template slot-scope="scope">
+						          		
+						          		<el-popconfirm :title="`确定删除'${scope.row.id}'？`"
+						          			@confirm="delUser(scope.row.id)">
+						          			<el-button circle icon="el-icon-delete" slot="reference" ></el-button>
+						          		</el-popconfirm>
+						          	</template>
+						          </el-table-column> 
+						  	<el-table-column label="修改" width="100">  
+						  	  <template slot-scope="scope">  
+						  	    <el-button  
+						  	                type="primary"  
+						  	                icon="el-icon-edit"  
+						  	                circle  
+						  	                @click="updateShow(scope.row)"  
+						  	              ></el-button>  
+						  	  </template>  
+						  	</el-table-column>
+						      </el-table>
+						  
+						  
+						  
+				
+				
+		</template>
+    </div>  
+  
+    <script src="js/axios.min.js"></script>  
+    <script src="js/vue.js"></script>  
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>  
+    <script>  axios.defaults.withCredentials = true;
+        new Vue({  
+            el: '#app',  
+            data: {  
+				username:'',
+				
+                users: [],
+				user:[],
+			  //控制编辑对话框的显示和隐藏
+			editDialogVisible: false,
+				    //修改学生的表单对象
+				    
+					editForm: {}
+                
+            },  
+            methods: {  
+				search(){
+					
+					      // 发起搜索请求  
+					      axios.get('http://localhost:9000/users/namesearch', {  
+					        params: {username: this.username }  
+					      })  
+					      .then(res => {  
+					        if (res.data.isOk) {
+					            this.users = res.data.users;  
+					        }  
+					      }) 
+				},
+				handleCurrentChange(val) {
+				        this.currentRow = val;
+				      },
+                loadUsers() {  // 修改为 loadUsers  
+                    axios.get('http://localhost:9000/users/list').then(res => {  
+                        if (res.data.isOk) {  
+                            this.$message('加载用户数据成功');  
+                            this.users = res.data.users;  
+                        }  
+                    })  
+                },  
+               
+                formatRegisteredDate(row, column, cellValue) {  
+                      
+                    return new Date(cellValue).toLocaleDateString();  
+                }, 
+				 //编辑确认按钮点击事件
+				            save () {
+				                 axios.post('http://localhost:9000/users/update', this.editForm).then(res => {
+									 if(res.data.isOk){
+				                   this.$message.success("保存成功")
+				                     this.editDialogVisible = false
+				                     this.loadUsers()
+									 }else{
+										 this.$message("用户名已存在");
+									 }
+				                  
+				                 })
+				           
+				               },
+							   logout(){
+							   	axios.post('http://localhost:9000/users/logout').then(res=>{
+							   		if(res.data.isOk){
+							   			alert(res.data.msg);
+							   			localStorage.clear();
+							   			location.href='login.html';
+							   		}else{
+							   			alert(res.data.msg);
+							   		}
+							   	})
+							   },
+				reset(){
+					this.username='';
+					this.loadUsers();
+				},
+				delUser(id){
+					if(id==1){
+						alert("此为管理员，不可以删除");
+						return ;
+					}
+						axios.get('http://localhost:9000/users/del', {
+							params: {id}
+						}).then(res => {
+							if(res.data.isOk){
+								this.$message(res.data.message);
+								this.loadUsers()
+							}
+						
+							
+							
+						})
+					},
+				            //编辑按钮事件
+				            updateShow(row) {
+				                this.editDialogVisible = true;
+				                //回显 当前行赋值给修改学生的表单对象
+				                this.editForm = row;
+				            }
+                
+            },  
+            mounted() { 
+				
+                this.loadUsers();  
+				
+            }
+        });  
+    </script>  
+</body>  
+</html>

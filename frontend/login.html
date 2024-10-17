@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>用户注册</title>
+		<link rel="stylesheet"  href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<style>
+			.content{
+				padding:200px;
+				border:5px soild #B0E0E6;
+				justify-content: center;
+			
+			}
+			
+			
+
+		</style>
+	</head>
+	<body>
+		<div id="app" class="content">
+			<el-row>
+				<el-col :offset="6" :span="12">
+					                    <h2>欢迎来到网上书店</h2>
+					<el-form :model="userForm" :rules="rules" ref="userForm" label-width="100px" class="demo-ruleForm">
+						<el-form-item label="用户名" prop="username">
+							<el-input v-model="userForm.username"></el-input>
+						</el-form-item>
+						<el-form-item label="角色">  
+						                    <el-radio-group v-model="userForm.role">  
+						                        <el-radio label="User">用户</el-radio>  
+						                        <el-radio label="Admin">管理员</el-radio>  
+						                    </el-radio-group>  
+						                </el-form-item> 
+						<el-form-item label="密码" prop="password">
+							<el-input v-model="userForm.password" type="password"></el-input>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" @click.prevent="login()">登录</el-button>
+							<el-button type="primary" @click.prevent="register()">注册</el-button>  
+							
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+		</div>
+		<script src="js/axios.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script>
+			axios.defaults.withCredentials = true;
+			new Vue({
+						el: '#app',
+						data: {
+							userForm: {
+								username: 'wang',
+								password: 'wang0225.',
+								role: 'Admin' // 默认为用户 
+
+							},
+							rules: {
+								username: [{
+									required: true,
+									message: '用户名不能为空',
+									trigger: 'blur'
+								}],
+								password: [{
+										required: true,
+										message: '密码不能为空',
+										trigger: 'blur'
+									},
+									// 可以添加密码强度验证规则  
+								]
+							}
+						},
+						methods: {
+							login() {
+								let fd = new FormData();
+								fd.append('username', this.userForm.username);
+								fd.append('role', this.userForm.role);
+								fd.append('password', this.userForm.password);
+								axios.post('http://localhost:9000/users/login', fd).then(res => {
+										 if (res.data.isOk) {
+										 	alert(res.data.msg);
+											if (this.userForm.role == "User") {
+												location.href = 'main.html'
+											}
+											if (this.userForm.role == "Admin") {
+												location.href = 'listUser.html'
+											}
+										 } 
+										else {
+											alert(res.data.msg);
+											}
+										})
+								},
+								register(){
+									location.href = 'UserRegister.html'
+								}
+								
+							}
+						});
+		</script>
+	</body>
+</html>
