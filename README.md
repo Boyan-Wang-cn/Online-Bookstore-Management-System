@@ -1,3 +1,82 @@
+**Introduction**
+
+This is a simple book management system, with the backend developed using web technologies, the frontend implemented in HTML, and a MySQL database. It involves basic data operations such as Create, Read, Update, and Delete (CRUD), database access, and captcha verification, which can help web beginners to learn more effectively.
+
+**System Architecture**
+
+The system is designed with a front-end and back-end separation architecture: the frontend uses Vue + ElementUI + Axios, and the backend uses Spring Boot + MyBatis.
+
+The database structure is established: MySQL is used to create corresponding data tables, including book tables, book category tables, user tables, order tables, etc.
+
+**Administrator Functions**
+
+- Book Management: Implement CRUD functions for books, including entering, editing, deleting, and querying book information.
+
+- Book Category Management: Implement CRUD functions for book categories, including adding, deleting, modifying, and querying categories.
+
+- User Management: Implement CRUD functions for users, including adding, deleting, modifying, and querying user information.
+
+- Administrator Interface: Design a clear menu navigation for quick access to book management, book category management, and user management pages, as well as a safe exit button.
+
+- The administrator interface is shown in the following figure:
+
+  ![Image](https://github.com/user-attachments/assets/90a31cfd-5666-4b72-b64e-7cea3d542128)
+
+**User Functions**
+
+- Book Browsing: After logging in, users can browse all book information in the system, including title, author, category, price, etc.
+
+- Purchase Function: Users can select books for purchase, implementing the addition of orders. After purchasing, the system should generate the corresponding order items and save them to the database.
+
+- Order Viewing: Users can view their purchase history, including order number, purchase time, and book information.
+
+- The user interface is shown in the following figure:
+
+  ![Image](https://github.com/user-attachments/assets/4ed030e9-3290-4138-93dc-0fafb9725eea)
+
+**Development Environment**
+
+- Frontend: HBuilder is used as the development IDE, Vue as the framework, ElementUI as the UI component library, and Axios for HTTP requests.
+
+- Backend: IntelliJ IDEA is used as the development IDE, Spring Boot as the framework, Spring MVC as the MVC framework, MyBatis as the persistence layer framework, and MySQL as the database.
+
+**Database Design (To replicate, please add the following attributes to create MySQL tables and connect to the database)**
+
+- Book Table: Stores book information, including Book ID (primary key, auto-increment), title, author, category ID, price, inventory, ISBN (unique), book description, etc.
+
+- Book Category Table: Stores book category information, including Category ID (primary key, auto-increment), category name (unique), etc.
+
+- User Table: Stores user information, including User ID (primary key, auto-increment), username (unique), password, email, role, registration time, etc.
+
+- Order Table: Stores user order information, including Order ID (primary key, auto-increment), title, quantity, purchase time, total price, etc.
+
+  Additionally, the category ID in the book table is a foreign key, and if there is no such ID in the book category table, the book cannot be added.
+
+**Usage**
+
+First, place the backend code in IDEA, load the Maven dependencies, modify the database connection to your own database, and then start it.
+
+Then, place the frontend code in HBuilder, find the entry page main.html, and load it in the browser to use the project.
+
+**Contribution**
+
+Everyone is welcome to contribute to the online bookstore management system. There are actually some bugs in it, and I appreciate any criticism and correction of my code.
+
+**Author**
+
+* **Wang Boyan** - *Initial work* - [Boyan-Wang-cn](https://github.com/Boyan-Wang-cn)
+
+Also, thanks to the [contributors](https://github.com/Boyan-Wang-cn/Online-Bookstore-Management-System/contributors) who participated in this project.
+
+**License**
+
+This project follows the MIT license - for more information, please refer to the [LICENSE.md](LICENSE.md) file.
+
+**Acknowledgments**
+
+* Salute to the original authors of any code used.
+* Inspiration, code snippets, etc.
+
 ## 简介
   这是一个简易的图书管理系统，后端采用web开发，前端使用html语言，数据库使用的Mysql。里面涉及到简单的数据增删改查操作、访问数据库、验证码验证等操作，可以帮助web初学者更好地学习。
 ## 系统架构
